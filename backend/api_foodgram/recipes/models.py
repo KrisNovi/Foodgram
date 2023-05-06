@@ -18,7 +18,10 @@ class Tag(models.Model):
         verbose_name='Слаг',
         unique=True
     )
-
+    
+    def __str__(self) -> str:
+        return self.name
+    
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
@@ -30,13 +33,17 @@ class Ingredient(models.Model):
         db_index=True,
         verbose_name='Название ингредиента'
     )
-    qty = models.FloatField(
-        null=True, verbose_name='Количество'
-    )
     measurement_unit = models.CharField(
         max_length=200,
         verbose_name='Единица измерения'
     )
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        verbose_name = 'Ингредиенты'
+        verbose_name_plural = 'Ингредиенты'
 
 
 class Recipe(models.Model):
@@ -71,6 +78,13 @@ class Recipe(models.Model):
     # slug = models.SlugField
     # pub_date = models.DateTimeField(verbose_name='Дата публикации', auto_now_add=True, db_index=True)
 
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+
 
 class RecipeIngredient(models.Model):
     amount = models.PositiveIntegerField(
@@ -79,16 +93,22 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        null=True
+        null=True,
+        verbose_name='Название рецепта'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        null=True
+        null=True,
+        verbose_name='Ингредиент'
     )
     
-    def __dtr__(self):
-        return f'{self.ingredient} в {self.recipe}'
+    def __str__(self):
+        return f'{self.ingredient} в рецепте "{self.recipe}"'
+    
+    class Meta:
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
 
 class Favorite(models.Model):
@@ -117,7 +137,7 @@ class Favorite(models.Model):
         ]
 
 
-class Follow(models.Model):
+class Subscription(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

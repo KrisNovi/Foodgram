@@ -9,7 +9,11 @@ import base64
 import webcolors
 
 
-class CustomUserCreateSerializer(UserCreateSerializer):
+class UserCreateSerializer(UserCreateSerializer):
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+
     class Meta:
         model = User
         fields = (
@@ -28,7 +32,10 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         return value
 
 
-class CustomUserSerializer(UserSerializer):
+class UserSerializer(UserSerializer):
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    
     class Meta:
         model = User
         fields = (
@@ -72,6 +79,16 @@ class IngredientSerializer(serializers.ModelSerializer):
         )
 
 
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecipeIngredient
+        fields = (
+            'amount',
+            'recipe',
+            'ingredient',
+        )
+
+
 class RecipeSerializerPost(serializers.ModelSerializer):
     ingredients = IngredientSerializer(many=True)
     tags = TagSerializer(many=True)
@@ -89,7 +106,7 @@ class RecipeSerializerPost(serializers.ModelSerializer):
 
 
 class RecipeSerializerGet(serializers.ModelSerializer):
-    ingredients = IngredientSerializer(many=True)
+    ingredients = serializers.SerializerMethodField(read_only=True)
     # is_favorited = serializers.BooleanField()
     # is_in_shopping_cart = serializers.BooleanField()
     tags = TagSerializer(many=True)
@@ -108,6 +125,15 @@ class RecipeSerializerGet(serializers.ModelSerializer):
             'text',
             'cooking_time'
         )
+
+    def get_ingredients(self, obj):
+        ingredients = RecipeIngredient.objects.filter(recipe=obj)
+        return RecipeIngredientSerializer(ingredients, many=True).data
+
+    # def get_tags(self, obj):
+    #     tags = Tag.objects.filter(tag)
+    
+
 
 
 # class Base64ImageField(serializers.ImageField):

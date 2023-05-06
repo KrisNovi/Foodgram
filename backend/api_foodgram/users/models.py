@@ -1,12 +1,19 @@
 from django.db import models
 
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 
 
 class User(AbstractUser):
+    USERNAME_FIELD = 'email'
+
     USER = 'user'
     ADMIN = 'admin'
+
+    REQUIRED_FIELDS = (
+        'username',
+        'first_name',
+        'last_name'
+    )
 
     ROLE_CHOICES = [
         (USER, 'Пользователь'),
@@ -28,7 +35,6 @@ class User(AbstractUser):
         max_length=255,
         null=True
     )
-    password = models.CharField(max_length=100, verbose_name='Пароль')
     first_name = models.CharField(max_length=100, verbose_name='Имя')
     last_name = models.CharField(max_length=100, verbose_name='Фамилия')
 
