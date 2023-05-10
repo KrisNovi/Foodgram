@@ -11,6 +11,9 @@ from .serializers import (
     UserCreateSerializer
 )
 from djoser.views import UserViewSet
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from api.permissions import IsRoleAdmin, IsAuthorOrReadOnly, ReadOnly
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class CustomUserViewSet(UserViewSet):
@@ -36,11 +39,17 @@ class CustomUserViewSet(UserViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    permission_classes = [ReadOnly, ]
+    pagination_class = None
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    pagination_class = None
+    permission_classes = [IsAuthenticatedOrReadOnly, ]
+    search_fields = ['^name', ]
+    filter_backends = (DjangoFilterBackend,)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -49,10 +58,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         'retrieve': RecipeSerializerGet,
         'list': RecipeSerializerGet,
         'create': RecipeSerializerPost,
-        # 'partial_update': TitleSerializerPost,
+        'partial_update': RecipeSerializerPost
     }
     # filter_backends = [DjangoFilterBackend]
     # filterset_class = TitleFilter
+    
+    # def perform_create(self, serializer):
+    #     serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
         if hasattr(self, 'serializer_class_by_action'):
@@ -62,12 +74,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         return super(RecipeViewSet, self).get_serializer_class()
 
-    # def get_permissions(self):
-    #     if self.action in ['list', 'retrieve']:
-    #         permission_classes = [AllowAny]
-    #     else:
-    #         permission_classes = [IsRoleAdmin]
-    #     return [permission() for permission in permission_classes]
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        elif self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        elif self.action == 'partial_update':
+            permission_classes = [IsAuthorOrReadOnly]
+        else:
+            permission_classes = [IsAuthorOrReadOnly]
+        return [permission() for permission in permission_classes]
     
 
 

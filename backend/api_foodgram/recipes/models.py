@@ -94,13 +94,15 @@ class RecipeIngredient(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         null=True,
-        verbose_name='Название рецепта'
+        verbose_name='Название рецепта',
+        related_name='recipe_ingredient'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         null=True,
-        verbose_name='Ингредиент'
+        verbose_name='Ингредиент',
+        related_name='recipe_ingredient'
     )
     
     def __str__(self):
@@ -111,18 +113,14 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = 'Ингредиенты в рецептах'
 
 
-class Favorite(models.Model):
+class FavoriteRecipesBaseModel(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorites',
-        verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favorites',
-        verbose_name='Рецепт'
     )
 
     def __str__(self):
@@ -135,6 +133,16 @@ class Favorite(models.Model):
                 name='unique_favorite_user_recipe'
             )
         ]
+
+
+class Favorite(FavoriteRecipesBaseModel):
+    class Meta:
+        verbose_name = 'Избранное'
+
+
+class ShoppingList(FavoriteRecipesBaseModel):
+    class Meta:
+        verbose_name = 'Список покупок'
 
 
 class Subscription(models.Model):
