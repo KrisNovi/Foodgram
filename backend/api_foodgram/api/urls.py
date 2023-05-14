@@ -5,7 +5,7 @@ from api.views import (
     TagViewSet,
     IngredientViewSet,
     RecipeViewSet,
-    UserViewSet,
+    CustomUserViewSet,
     # signup,
     # get_token,
 )
@@ -18,7 +18,7 @@ router = routers.DefaultRouter()
 router.register('tags', TagViewSet, basename='tags')
 router.register('ingredients', IngredientViewSet, basename='ingredients')
 router.register('recipes', RecipeViewSet, basename='recipes')
-router.register('users', UserViewSet, basename='users')
+router.register('users', CustomUserViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router.urls)),

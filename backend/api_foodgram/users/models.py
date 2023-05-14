@@ -30,16 +30,11 @@ class User(AbstractUser):
         default=USER,
         verbose_name='Роль'
     )
-    confirmation_code = models.CharField(
-        blank=True,
-        max_length=255,
-        null=True
-    )
     first_name = models.CharField(max_length=100, verbose_name='Имя')
     last_name = models.CharField(max_length=100, verbose_name='Фамилия')
 
     class Meta:
-        ordering = ('id',)
+        ordering = ('username',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -53,3 +48,32 @@ class User(AbstractUser):
     @property
     def is_user(self):
         return self.role == self.USER
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='follower',
+        verbose_name='Подписчик',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='author',
+        verbose_name='Автор рецепта'
+    )
+
+    class Meta:
+        ordering = ('-user',)
+        constraints = [
+            models.UniqueConstraint(
+                name='user_author_pair_unique',
+                fields=['user', 'author'],
+            ),
+        ]
+
+    # def __str__(self) -> str:
+    #     return self.author

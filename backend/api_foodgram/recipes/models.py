@@ -113,62 +113,50 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = 'Ингредиенты в рецептах'
 
 
-class FavoriteRecipesBaseModel(models.Model):
+class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        verbose_name='Пользователь',
+        related_name='favorite',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        verbose_name='Рецепт',
+        related_name='favorite',
     )
 
     def __str__(self):
-        return f'Избранный {self.recipe} у {self.user}'
-
+        return self.user.username
+    
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=('user', 'recipe'),
-                name='unique_favorite_user_recipe'
-            )
-        ]
-
-
-class Favorite(FavoriteRecipesBaseModel):
-    class Meta:
+        ordering = ('-user',)
         verbose_name = 'Избранное'
 
 
-class ShoppingList(FavoriteRecipesBaseModel):
+class ShoppingCart(models.Model):
+    recipe = models.ForeignKey(
+        Recipe,
+        verbose_name='Рецепты в списке покупок',
+        related_name='cart',
+        on_delete=models.CASCADE,
+    )
+    user = models.ForeignKey(
+        User,
+        verbose_name='Список пользователя',
+        related_name='cart',
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self) -> str:
+        return f'{self.user} -> {self.recipe}'
+
     class Meta:
+        ordering = ('-user',)
         verbose_name = 'Список покупок'
 
 
-class Subscription(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='follower',
-        verbose_name='Подписчик',
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Автор рецепта'
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                name='user_author_pair_unique',
-                fields=['user', 'author'],
-            ),
-        ]
-
-    def __str__(self) -> str:
-        return self.author
 
 
 
