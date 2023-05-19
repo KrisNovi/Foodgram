@@ -1,27 +1,28 @@
 ﻿from django.urls import include, path
-from rest_framework import routers
+from rest_framework.routers import DefaultRouter
+from .views import (
+    IngredientsViewSet, RecipeViewSet, TagViewSet, UserViewSet,
+    download_shopping_cart,)
 
-from api.views import (
-    TagViewSet,
-    IngredientViewSet,
-    RecipeViewSet,
-    CustomUserViewSet,
-    # signup,
-    # get_token,
-)
+users_router = DefaultRouter()
+users_router.register('', UserViewSet, basename='users')
 
-app_name = 'api'
+recipes_router = DefaultRouter()
+recipes_router.register(
+    'tags', TagViewSet, basename='tags')
+recipes_router.register(
+    'recipes', RecipeViewSet, basename='recipes')
+recipes_router.register(
+    'ingredients', IngredientsViewSet, basename='ingredients')
 
-router = routers.DefaultRouter()
-
-
-router.register('tags', TagViewSet, basename='tags')
-router.register('ingredients', IngredientViewSet, basename='ingredients')
-router.register('recipes', RecipeViewSet, basename='recipes')
-router.register('users', CustomUserViewSet, basename='users')
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('auth/', include('djoser.urls')),
+    path('users/', include(users_router.urls)),
     path('auth/', include('djoser.urls.authtoken')),
+    path(
+        'recipes/download_shopping_cart/',
+        download_shopping_cart,
+        name='download_shopping_cart'
+    ),
+    path('', include(recipes_router.urls)),
 ]

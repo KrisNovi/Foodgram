@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
-from datetime import timedelta
 
 from dotenv import load_dotenv
 
@@ -176,7 +175,7 @@ DJOSER = {
         'user_create': 'api.serializers.UserCreateSerializer',
         'current_user': 'api.serializers.UserSerializer',
     },
-    'PERMISSIONS': { 
+    'PERMISSIONS': {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
         'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
     },

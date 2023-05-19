@@ -5,6 +5,6 @@ from users.models import User
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'role', 'first_name', 'last_name')
-    # search_fields = ('bio',)
+    list_display = ('username', 'email', 'first_name', 'last_name')
+    search_fields = ('email',)
     empty_value_display = '-пусто-'

@@ -1,7 +1,8 @@
 ﻿from csv import DictReader
 
 from django.core.management import BaseCommand
-from recipes.models import Ingredient
+
+from recipes.models import Ingredients
 
 ALREDY_LOADED_ERROR_MESSAGE = """
 If you need to reload the data from the CSV file,
@@ -16,7 +17,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Show this when the data already exist in the database
-        if Ingredient.objects.exists():
+        if Ingredients.objects.exists():
             print('category data already loaded...exiting.')
             print(ALREDY_LOADED_ERROR_MESSAGE)
             return
@@ -25,5 +26,8 @@ class Command(BaseCommand):
 
         # Code to load the data into database
         for row in DictReader(open('./ingredients.csv')):
-            ingredient = Ingredient(name=row['name'], measurement_unit=row['measurement_unit'])
+            ingredient = Ingredients(
+                name=row['name'],
+                measurement_unit=row['measurement_unit']
+            )
             ingredient.save()
