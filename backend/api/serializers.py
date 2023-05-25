@@ -274,10 +274,8 @@ class FavoriteBaseSerializer(serializers.ModelSerializer):
 
     def favorite_validator(self, data, model):
         request = self.context.get('request')
-        recipe = data.get('recipes')
-        instanse, _ = model.objects.get_or_create(
-            user=request.user)
-        favorite_exist = instanse.recipes.filter(pk=recipe.pk).exists()
+        recipes = data.get('recipes')
+        favorite_exist = request.user.fav.filter(recipes=recipes).exists()
         if request.method == 'DELETE':
             if not favorite_exist:
                 raise serializers.ValidationError(
@@ -287,6 +285,22 @@ class FavoriteBaseSerializer(serializers.ModelSerializer):
             if favorite_exist:
                 raise serializers.ValidationError(
                     'Рецепт уже есть в избранном'
+                )
+        return data
+    
+    def cart_validator(self, data, model):
+        request = self.context.get('request')
+        recipes = data.get('recipes')
+        favorite_exist = request.user.cart.filter(recipes=recipes).exists()
+        if request.method == 'DELETE':
+            if not favorite_exist:
+                raise serializers.ValidationError(
+                    'Рецепта нет в корзине'
+                )
+        if request.method == 'POST':
+            if favorite_exist:
+                raise serializers.ValidationError(
+                    'Рецепт уже есть в корзине'
                 )
         return data
 
@@ -315,4 +329,4 @@ class ShoppingCartSerializer(FavoriteBaseSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        return self.favorite_validator(data, ShoppingCart)
+        return self.cart_validator(data, ShoppingCart)

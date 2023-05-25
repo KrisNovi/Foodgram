@@ -1,10 +1,12 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Exists, OuterRef
+from django.db import models
+from django.db.models import Count, Exists, OuterRef, Sum
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filter
 from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet as DjoserUserViewSet
-from recipes.models import Favorite, Ingredients, Recipe, ShoppingCart, Tag
+from recipes.models import Favorite, Ingredients, IngredientsInRecipe, Recipe, ShoppingCart, Tag
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -22,10 +24,28 @@ User = get_user_model()
 @api_view(('GET', ))
 @permission_classes((permissions.IsAuthenticated,))
 def download_shopping_cart(request):
-    cart = get_object_or_404(ShoppingCart, user=request.user)
-    response = cart.download()
-    response['Content-Type'] = 'text/plain'
-    return response
+    if request.method == 'GET':
+        # get all favorite recipes of the user
+        user = request.user
+        favorites = ShoppingCart.objects.filter(user=user).values_list('recipes__id', flat=True)
+
+        # get all ingredients in the user's favorite recipes and other recipes
+        ingredients_list = IngredientsInRecipe.objects.filter(recipe__in=Recipe.objects.filter(id__in=favorites)).values(
+            'ingredients__name',
+            'ingredients__measurement_unit'
+        ).annotate(amount=Sum('amount'))
+
+        # create shopping cart string
+        shopping_cart = ''
+        for ingredient in ingredients_list:
+            shopping_cart += f'{ingredient["ingredients__name"]} - {ingredient["amount"]} {ingredient["ingredients__measurement_unit"]}\r\n'
+
+        # create response with shopping cart string
+        response = HttpResponse(shopping_cart, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="shopping_cart.txt"'
+        return response
+
+    return HttpResponseNotAllowed(['GET'])
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -148,7 +168,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly,
     )
     filter_backends = (filter.DjangoFilterBackend,)
-    # filterset_class = RecipeFilter
 
     def get_queryset(self):
         user = self.request.user
@@ -156,11 +175,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.queryset
         return self.queryset.annotate(
             is_favorited=Exists(
-                user.favorite_set.filter(recipes=OuterRef('pk'))),
+                user.fav.filter(recipes=OuterRef('pk'))),
             is_in_shopping_cart=Exists(
-                user.shoppingcart_set.filter(recipes=OuterRef('pk'))),
+                user.cart.filter(recipes=OuterRef('pk'))),
         )
-    
+
     serializer_class_by_action = {
         'create': RecipeSerializerPost,
         'update': RecipeSerializerPost,
@@ -207,13 +226,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         user = request.user
-        instance, created = model.objects.get_or_create(user=self.request.user)
+        instances = model.objects.filter(user=self.request.user)
+        if not instances:
+            instances = model.objects.create(user=self.request.user, recipes_id=pk)
+        else:
+            instances = instances.first()
 
         if request.method == 'DELETE':
             model.objects.filter(user=user, recipes=pk).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        instance.recipes.add(pk)
+        instances.recipes = Recipe.objects.get(pk=pk)
+        instances.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

@@ -1,5 +1,6 @@
+from . validators import validate_amount
+from django.core.validators import MinValueValidator
 from django.db import models
-from django.http import HttpResponse
 from users.models import User
 
 
@@ -61,7 +62,7 @@ class Recipe(models.Model):
     )
     author = models.ForeignKey(
         User,
-        null=True,
+        # null=True,
         on_delete=models.CASCADE,
         related_name='recipe',
         verbose_name='Автор',
@@ -85,7 +86,10 @@ class Recipe(models.Model):
         verbose_name='Описание рецепта',
     )
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления (минуты)'
+        verbose_name='Время приготовления (минуты)',
+        validators=(
+            MinValueValidator(1),
+        ),
     )
     publication_date = models.DateTimeField(
         'Дата публикации',
@@ -113,8 +117,10 @@ class IngredientsInRecipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиенты',
     )
+
     amount = models.PositiveSmallIntegerField(
-        verbose_name='Количество'
+        verbose_name='Количество',
+        validators=[validate_amount]
     )
 
     def __str__(self):
@@ -135,12 +141,12 @@ class IngredientsInRecipe(models.Model):
 class FavoriteBaseModel(models.Model):
     user = models.ForeignKey(
         User,
-        null=True,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
     )
-    recipes = models.ManyToManyField(
+    recipes = models.ForeignKey(
         Recipe,
+        on_delete=models.CASCADE,
         verbose_name='Рецепты',
     )
 
@@ -153,26 +159,29 @@ class FavoriteBaseModel(models.Model):
 
 class Favorite(FavoriteBaseModel):
 
-    class Meta:
+    class Meta(FavoriteBaseModel.Meta):
         ordering = ('-user',)
-        verbose_name = 'Избраный рецепт'
-        verbose_name_plural = 'Избраные рецепты'
+        verbose_name = 'Избранный рецепт'
+        verbose_name_plural = 'Избранные рецепты'
+        default_related_name = 'fav'
+        constraints = (
+            models.UniqueConstraint(
+                fields=['user', 'recipes'],
+                name='unique_user_recipe_favorite',
+            ),
+        )
 
 
 class ShoppingCart(FavoriteBaseModel):
 
-    def download(self):
-        ingredients = IngredientsInRecipe.objects.filter(recipe__in=self.recipes.all()).values('ingredients__name', 'ingredients__measurement_unit').annotate(total=models.Sum('amount'))
-
-        response = HttpResponse(content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_cart.txt"'
-
-        for ingredient in ingredients:
-            response.write('{} - {}\n'.format(ingredient['ingredients__name'], ingredient['total']))
-
-        return response
-
-    class Meta:
+    class Meta(FavoriteBaseModel.Meta):
         ordering = ('-user',)
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        default_related_name = 'cart'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipes'],
+                name='unique_user_recipe_shopping_cart',
+            )
+        ]

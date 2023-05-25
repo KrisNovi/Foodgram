@@ -45,13 +45,11 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('user',)
-    filter_horizontal = ('recipes', )
+    list_display = ('user', 'recipes')
     search_fields = ('recipes',)
 
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('user',)
-    filter_horizontal = ('recipes', )
+    list_display = ('user', 'recipes')
     search_fields = ('user', 'recipes',)
