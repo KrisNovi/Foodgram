@@ -237,14 +237,16 @@ class RecipeSerializerPost(serializers.ModelSerializer):
         return data
 
     def add_ingredients(self, instance, ingredients_data):
+        through_instances = []
         for ingredients in ingredients_data:
             ingridient, amount = ingredients.values()
-            through = IngredientsInRecipe(
+            through_instance = IngredientsInRecipe(
                 recipe=instance,
                 ingredients=ingridient,
                 amount=amount,
             )
-            through.save()
+            through_instances.append(through_instance)
+        IngredientsInRecipe.objects.bulk_create(through_instances)
         return instance
 
     def create(self, validated_data):
@@ -287,7 +289,7 @@ class FavoriteBaseSerializer(serializers.ModelSerializer):
                     'Рецепт уже есть в избранном'
                 )
         return data
-    
+
     def cart_validator(self, data, model):
         request = self.context.get('request')
         recipes = data.get('recipes')
@@ -306,7 +308,7 @@ class FavoriteBaseSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         serializer = ShortRecipeSerializer(
-            instance.get('recipes'),
+            instance.recipes,
         )
 
         return serializer.data

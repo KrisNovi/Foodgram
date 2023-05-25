@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.db import models
 from django.db.models import Count, Exists, OuterRef, Sum
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filter
 from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet as DjoserUserViewSet
-from recipes.models import Favorite, Ingredients, IngredientsInRecipe, Recipe, ShoppingCart, Tag
+from recipes.models import (Favorite, Ingredients,
+                            IngredientsInRecipe, Recipe,
+                            ShoppingCart, Tag)
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -27,10 +28,12 @@ def download_shopping_cart(request):
     if request.method == 'GET':
         # get all favorite recipes of the user
         user = request.user
-        favorites = ShoppingCart.objects.filter(user=user).values_list('recipes__id', flat=True)
+        favorites = ShoppingCart.objects.filter(
+            user=user).values_list('recipes__id', flat=True)
 
         # get all ingredients in the user's favorite recipes and other recipes
-        ingredients_list = IngredientsInRecipe.objects.filter(recipe__in=Recipe.objects.filter(id__in=favorites)).values(
+        ingredients_list = IngredientsInRecipe.objects.filter(
+            recipe__in=Recipe.objects.filter(id__in=favorites)).values(
             'ingredients__name',
             'ingredients__measurement_unit'
         ).annotate(amount=Sum('amount'))
@@ -226,18 +229,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         user = request.user
-        instances = model.objects.filter(user=self.request.user)
-        if not instances:
-            instances = model.objects.create(user=self.request.user, recipes_id=pk)
-        else:
-            instances = instances.first()
-
         if request.method == 'DELETE':
             model.objects.filter(user=user, recipes=pk).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-
-        instances.recipes = Recipe.objects.get(pk=pk)
-        instances.save()
+        serializer.save(user=self.request.user)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
