@@ -30,20 +30,14 @@ def download_shopping_cart(request):
         user = request.user
         favorites = ShoppingCart.objects.filter(
             user=user).values_list('recipes__id', flat=True)
-
-        # get all ingredients in the user's favorite recipes and other recipes
         ingredients_list = IngredientsInRecipe.objects.filter(
             recipe__in=Recipe.objects.filter(id__in=favorites)).values(
             'ingredients__name',
             'ingredients__measurement_unit'
         ).annotate(amount=Sum('amount'))
-
-        # create shopping cart string
         shopping_cart = ''
         for ingredient in ingredients_list:
             shopping_cart += f'{ingredient["ingredients__name"]} - {ingredient["amount"]} {ingredient["ingredients__measurement_unit"]}\r\n'
-
-        # create response with shopping cart string
         response = HttpResponse(shopping_cart, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename="shopping_cart.txt"'
         return response
