@@ -26,7 +26,6 @@ User = get_user_model()
 @permission_classes((permissions.IsAuthenticated,))
 def download_shopping_cart(request):
     if request.method == 'GET':
-        # get all favorite recipes of the user
         user = request.user
         favorites = ShoppingCart.objects.filter(
             user=user).values_list('recipes__id', flat=True)
