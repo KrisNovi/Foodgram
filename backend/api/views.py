@@ -5,13 +5,13 @@ from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filter
 from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet as DjoserUserViewSet
-from recipes.models import (Favorite, Ingredients,
-                            IngredientsInRecipe, Recipe,
+from recipes.models import (Favorite, Ingredients, IngredientsInRecipe, Recipe,
                             ShoppingCart, Tag)
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from users.models import Subscription
+
 from .filters import IngredientsFilter
 from .serializers import (FavoriteSerializer, IngredientsSerializer,
                           RecipeSerializer, RecipeSerializerPost,
@@ -36,9 +36,15 @@ def download_shopping_cart(request):
         ).annotate(amount=Sum('amount'))
         shopping_cart = ''
         for ingredient in ingredients_list:
-            shopping_cart += f'{ingredient["ingredients__name"]} - {ingredient["amount"]} {ingredient["ingredients__measurement_unit"]}\r\n'
+            shopping_cart += (
+                f'{ingredient["ingredients__name"]} - '
+                f'{ingredient["amount"]} '
+                f'{ingredient["ingredients__measurement_unit"]}\r\n'
+            )
         response = HttpResponse(shopping_cart, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_cart.txt"'
+        response['Content-Disposition'] = (
+            'attachment; filename="shopping_cart.txt"'
+        )
         return response
 
     return HttpResponseNotAllowed(['GET'])

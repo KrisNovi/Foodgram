@@ -10,11 +10,11 @@ services:
       - ./.env
 
   backend:
-    # image: kapkadibab/foodgram:latest
+    image: krisnovi/backend:v1.0.0
     restart: always
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    # build:
+    #   context: ../backend
+    #   dockerfile: Dockerfile
     container_name: backend
     volumes:
       - static_value:/app/static/
@@ -25,10 +25,10 @@ services:
       - ./.env
 
   frontend:
-    # image: frontend
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: krisnovi/frontend:v1.0.0
+    # build:
+    #   context: ../frontend
+    #   dockerfile: Dockerfile
     container_name: frontend
     volumes:
       - ../frontend/:/app/result_build/

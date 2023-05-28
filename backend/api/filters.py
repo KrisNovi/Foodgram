@@ -1,5 +1,5 @@
 ﻿import django_filters
-from recipes.models import Recipe, Ingredients, IngredientsInRecipe
+from recipes.models import Ingredients
 
 
 class IngredientsFilter(django_filters.FilterSet):
