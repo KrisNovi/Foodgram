@@ -1,16 +1,15 @@
-version: '3.8'
+version: '3.3'
 services:
 
   db:
     image: postgres:14.4-alpine
-    # container_name: postgresql
     volumes:
       - db_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
 
   backend:
-    image: krisnovi/backend:v1.0.0
+    image: krisnovi/backend:latest
     restart: always
     # build:
     #   context: ../backend
@@ -29,7 +28,6 @@ services:
     # build:
     #   context: ../frontend
     #   dockerfile: Dockerfile
-    container_name: frontend
     volumes:
       - ../frontend/:/app/result_build/
       - static_value:/app/result_build/build/static/
@@ -51,24 +49,5 @@ services:
 
 volumes:
   static_value:
-    # driver: local
-    # driver_opts:
-    #   o: bind
-    #   type: ext4
-    #   device: /www/static/
   media_value:
-    # driver: local
-    # driver_opts:
-    #   o: bind
-    #   type: ext4
-    #   device: /www/media/
   db_data:
-    # driver: local
-    # driver_opts:
-    #   o: bind
-    #   type: ext4
-    #   device: /www/db/
-# volumes:
-#   db_data:
-#   static_value:
-#   madia_value:
