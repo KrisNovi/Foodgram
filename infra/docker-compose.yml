@@ -9,7 +9,7 @@ services:
       - ./.env
 
   backend:
-    image: krisnovi/backend:latest
+    image: krisnovi/backend:v1.0.1
     restart: always
     # build:
     #   context: ../backend
