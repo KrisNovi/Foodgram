@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿name: yamdb_workflow
+=======
+name: yamdb_workflow
+>>>>>>> 3ac92331a2fd8c572c88b662f85fd7fbfd8f74ae
 
 on: [push]
 
