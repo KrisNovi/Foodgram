@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-﻿name: yamdb_workflow
-=======
 name: yamdb_workflow
->>>>>>> eb829546c79715ae2f81dff9d22e74eacdd0dd2a
 
 on: [push]
 
