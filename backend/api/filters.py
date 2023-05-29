@@ -1,6 +1,6 @@
 ﻿import django_filters
 from django_filters import filters
-from recipes.models import Ingredients, Recipe
+from recipes.models import Ingredients, Recipe, Tag
 
 
 class IngredientsFilter(django_filters.FilterSet):
@@ -15,12 +15,12 @@ class IngredientsFilter(django_filters.FilterSet):
 
 
 class RecipeFilter(django_filters.FilterSet):
-    tags = django_filters.CharFilter(
+    tags = filters.ModelMultipleChoiceFilter(
+        queryset=Tag.objects.all(),
         field_name='tags__slug',
-        lookup_expr='iexact',
+        to_field_name='slug'
     )
-    is_favorited = filters.BooleanFilter()
 
     class Meta:
         model = Recipe
-        fields = ['tags', 'is_favorited', ]
+        fields = ['tags', ]
