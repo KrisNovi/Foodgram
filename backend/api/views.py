@@ -12,7 +12,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from users.models import Subscription
 
-from .filters import IngredientsFilter
+from .filters import IngredientsFilter, RecipeFilter
 from .serializers import (FavoriteSerializer, IngredientsSerializer,
                           RecipeSerializer, RecipeSerializerPost,
                           ShoppingCartSerializer, SubscribeSerializer,
@@ -170,6 +170,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly,
     )
     filter_backends = (filter.DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_queryset(self):
         user = self.request.user
