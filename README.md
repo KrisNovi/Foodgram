@@ -1,9 +1,13 @@
-![foodgram_workflow](https://github.com/KrisNovi/yamdb_final/actions/workflows/foodgram_workflow.yml/badge.svg)
+![foodgram_workflow](https://github.com/KrisNovi/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
 ### Описание пректа
 Проект собирает отзывы пользователей на произведения. Сами произведения в проекте не хранятся,
 здесь нельзя посмотреть фильм или послушать музыку.
 Посмотреть пример развернутого проекта можно тут:
-http://51.250.65.210/api/
+http://51.250.65.210/
+Админ: 
+log: nko
+pass: nko
+email: test@mail.ru
 ### Технологии
 См. requirements.txt
 ### Репозиторий
